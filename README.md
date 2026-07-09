@@ -15,12 +15,12 @@ In June 2025, the team released a redesign of the checkout cart (new UI). Within
 ---
 ## Key Findings
 
-- Overall RR grew from 6.68% → 11.95% after the UI update
-- Android was hit hardest: +7.7pp (6.7% → 14.4%)
-- iOS barely changed: +1.4pp (6.6% → 8.0%) - bug is Android-specific
-- Highest impact segment: Android + EU + Paid → RR = 20.33%
-- Checkout conversion dropped: 66.5% → 54.6% on Android
-- D7 Retention declined: 23.25% → 19.25% (-4pp)
+- Overall RR grew from 6.68% - 11.95% after the UI update
+- Android was hit hardest: +7.7pp (6.7% - 14.4%)
+- iOS barely changed: +1.4pp (6.6% - 8.0%) - bug is Android-specific
+- Highest impact segment: Android + EU + Paid - RR = 20.33%
+- Checkout conversion dropped: 66.5% - 54.6% on Android
+- D7 Retention declined: 23.25% - 19.25% (-4pp)
 - 60% of returns happen within 24 hours - stable before and after release
 
 **Recommendation:** urgent hotfix for Android UI checkout + A/B test of alternative checkout design

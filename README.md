@@ -67,4 +67,4 @@ dashboard.pbix   - Power BI Dashboard
    RR spike confirmed after June 15 across all cohorts
 
 7. **Anti-join drop-off analysis**
-   Drop-off rate stable: 6.3% → 5.9%
+   Drop-off rate stable: 6.3% - 5.9%

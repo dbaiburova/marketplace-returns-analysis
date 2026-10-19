@@ -100,3 +100,21 @@ Interactive Power BI dashboard with slicers  by device, region, channel and peri
 **Tooltips:**
 - Drop-off rate: Before 6.3% -- After 5.9% (stable)
 - 60% of returns happen within 24h (stable)
+- 
+## Conclusions & Recommendations
+
+**Is it a bug or noise?**
+Pattern confirmed - RR spike started exactly on June 15 and stayed elevated.
+**Who is affected?**
+Android users, especially EU + Paid segment.
+iOS barely changed -confirms Android-specific bug.
+
+**Root cause**
+Checkout completion rate dropped on Android  (66.5% --- 54.6%). 
+Users start checkout but  cannot complete it - UX bug on checkout screen.
+
+**Recommendations / Рекомендации**
+1. Urgent hotfix for Android checkout UI
+2. Priority: Android + EU + Paid segment
+3. A/B test alternative checkout design
+4. Monitor D7 Retention after the fix

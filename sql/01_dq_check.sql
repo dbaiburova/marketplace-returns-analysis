@@ -31,6 +31,11 @@ FROM p1_dim_user
 GROUP BY LEN(reg_date)
 ORDER BY len
 
+SELECT DISTINCT reg_date, LEN(reg_date) AS len
+FROM p1_dim_user
+WHERE LEN(reg_date) != 19
+ORDER BY LEN(reg_date)
+    
 -- Duplicates
 SELECT user_id, COUNT(*) AS cnt
 FROM p1_dim_user

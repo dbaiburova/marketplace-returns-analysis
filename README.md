@@ -83,3 +83,20 @@ the business questions.
 5. Share of returns within 24 hours
 6. Cohort analysis by order date
 7. Anti-join drop-off (checkout_start --- no payment)
+
+## Dashboard 
+
+Interactive Power BI dashboard with slicers  by device, region, channel and period.
+
+**Visuals**
+
+- KPI cards: Total Orders, Refunds, Return Rate%, D7 Retention%, Checkout Conversion%
+- Line chart: RR by day - spike after June 15 visible
+- Bar chart: RR by device - Android vs iOS before/after
+- Funnel: Checkout conversion by device 
+- D7 Retention: before/after comparison
+- Scatter plot: segments by RR before vs after
+  
+**Tooltips:**
+- Drop-off rate: Before 6.3% -- After 5.9% (stable)
+- 60% of returns happen within 24h (stable)

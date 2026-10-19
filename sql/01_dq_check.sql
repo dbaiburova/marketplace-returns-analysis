@@ -77,6 +77,11 @@ FROM p1_fact_orders
 GROUP BY LEN(order_date)
 ORDER BY len
 
+SELECT DISTINCT order_date, LEN(order_date) AS len
+FROM p1_fact_orders
+WHERE LEN(order_date) != 19
+ORDER BY LEN(order_date)
+    
 -- Duplicates
 SELECT order_id, COUNT(*) AS cnt
 FROM p1_fact_orders

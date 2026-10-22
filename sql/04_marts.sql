@@ -32,25 +32,9 @@ AND   channel_clean != 'Unknown'
 -- =============================================
 -- 3. MART_MAIN - Main metrics by day
 -- =============================================
-
-WITH retention AS (
-    SELECT
-        u.device_clean + '|' + u.region_clean + '|' + u.channel_clean AS segment_key,
-        CASE WHEN r.after_release = 1 THEN 'After_release'
-             ELSE 'Before_release' END AS period,
-        CAST(SUM(CASE WHEN r.retained_d7 = '1.0' 
-            THEN 1 ELSE 0 END) AS FLOAT) * 100
-        / NULLIF(COUNT(r.user_id), 0) AS d7_pct
-    FROM p1_retention_d7_clean r
-    JOIN p1_dim_user_clean u ON r.user_id = u.user_id
-    WHERE u.device_clean  != 'Unknown'
-    AND   u.region_clean  != 'Unknown'
-    AND   u.channel_clean != 'Unknown'
-    GROUP BY u.device_clean, u.region_clean, u.channel_clean, r.after_release
-)
 SELECT
     o.order_date_clean                                                AS order_date,
-    u.device_clean + '|' + u.region_clean + '|' + u.channel_clean    AS segment_key,
+    u.device_clean + '|' + u.region_clean + '|' + u.channel_clean     AS segment_key,
     u.device_clean                                                    AS device,
     u.region_clean                                                    AS region,
     u.channel_clean                                                   AS channel,
@@ -62,25 +46,21 @@ SELECT
         THEN 1 ELSE 0 END)                                            AS refunds,
     CAST(SUM(CASE WHEN o.status_clean = 'refunded' 
         THEN 1 ELSE 0 END) AS FLOAT) * 100
-    / NULLIF(COUNT(o.order_id), 0)                                    AS RR,
-    r.d7_pct
+    / NULLIF(COUNT(o.order_id), 0)                                    AS RR
 INTO mart_main
 FROM p1_fact_orders_clean o
 JOIN p1_dim_user_clean u ON o.user_id = u.user_id
-JOIN retention r ON r.segment_key = u.device_clean + '|' + 
-                    u.region_clean + '|' + u.channel_clean
-                AND r.period = CASE WHEN o.is_after_release = 1 
-                                    THEN 'After_release'
-                                    ELSE 'Before_release' END
-WHERE o.status_clean NOT IN ('unknown', 'cancelled')
+WHERE o.status_clean    NOT IN ('unknown', 'cancelled')
 AND   o.order_date_clean IS NOT NULL
-AND   u.device_clean  != 'Unknown'
-AND   u.region_clean  != 'Unknown'
-AND   u.channel_clean != 'Unknown'
+AND   u.device_clean    != 'Unknown'
+AND   u.region_clean    != 'Unknown'
+AND   u.channel_clean   != 'Unknown'
 GROUP BY
     o.order_date_clean,
-    u.device_clean, u.region_clean, u.channel_clean,
-    o.is_after_release, r.d7_pct
+    u.device_clean,
+    u.region_clean,
+    u.channel_clean,
+    o.is_after_release
 -- Result: 2,904 rows
 
 -- =============================================

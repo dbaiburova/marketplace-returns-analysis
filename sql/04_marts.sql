@@ -5,7 +5,7 @@
 -- =============================================
 
 -- =============================================
--- 1. DIM_DATE — Calendar table
+-- 1. DIM_DATE - Calendar table
 -- =============================================
 
 -- Already created separately
@@ -14,7 +14,7 @@
 --          month_name, day_name, is_after_release, period
 
 -- =============================================
--- 2. DIM_SEGMENTS — Unique segments
+-- 2. DIM_SEGMENTS - Unique segments
 -- =============================================
 
 SELECT DISTINCT
@@ -153,4 +153,61 @@ FROM (
                '3_checkout_complete' AS step_name, 3 AS step_order, checkout_complete AS sessions FROM stats
         UNION ALL
         SELECT event_date, segment_key, period, device, region, channel,
-               '4_payment_success'
+               '4_payment_success'   AS step_name, 4 AS step_order, payment_success   AS sessions FROM stats
+    ) steps
+) t
+ORDER BY event_date, segment_key, period, step_order
+-- Result: 11,672 rows
+
+-- =============================================
+-- 5. MART_RETENTION - D7 Retention by segment
+-- =============================================
+
+SELECT
+    r.reg_date                                                      AS date,
+    u.device_clean + '|' + u.region_clean + '|' + u.channel_clean  AS segment_key,
+    CASE WHEN r.after_release = 1 THEN 'After_release'
+         ELSE 'Before_release' END                                  AS period,
+    u.device_clean  AS device,
+    u.region_clean  AS region,
+    u.channel_clean AS channel,
+    COUNT(r.user_id)                                                AS total_users,
+    SUM(CASE WHEN r.retained_d7 = '1.0' THEN 1 ELSE 0 END)         AS retained
+INTO mart_retention
+FROM p1_retention_d7_clean r
+JOIN p1_dim_user_clean u ON r.user_id = u.user_id
+WHERE u.device_clean  != 'Unknown'
+AND   u.region_clean  != 'Unknown'
+AND   u.channel_clean != 'Unknown'
+GROUP BY r.reg_date, r.after_release,
+         u.device_clean, u.region_clean, u.channel_clean
+-- Result: 1,439 rows
+
+-- =============================================
+-- 6. MART_SEGMENTS - Segment diff table
+-- =============================================
+
+WITH rr AS (
+    SELECT 'device'  AS segment_type, device    AS segment_value, period,
+        CAST(SUM(refunds) AS FLOAT)*100/NULLIF(SUM(total_orders),0) AS RR
+    FROM mart_main GROUP BY device, period
+    UNION ALL
+    SELECT 'region'  AS segment_type, region    AS segment_value, period,
+        CAST(SUM(refunds) AS FLOAT)*100/NULLIF(SUM(total_orders),0) AS RR
+    FROM mart_main GROUP BY region, period
+    UNION ALL
+    SELECT 'channel' AS segment_type, channel   AS segment_value, period,
+        CAST(SUM(refunds) AS FLOAT)*100/NULLIF(SUM(total_orders),0) AS RR
+    FROM mart_main GROUP BY channel, period
+)
+SELECT
+    segment_type, segment_value,
+    ROUND(MAX(CASE WHEN period = 'Before_release' THEN RR END), 2) AS RR_before,
+    ROUND(MAX(CASE WHEN period = 'After_release'  THEN RR END), 2) AS RR_after,
+    ROUND(MAX(CASE WHEN period = 'After_release'  THEN RR END) -
+          MAX(CASE WHEN period = 'Before_release' THEN RR END), 2) AS diff
+INTO mart_segments
+FROM rr
+GROUP BY segment_type, segment_value
+ORDER BY diff DESC
+-- Result: 9 rows

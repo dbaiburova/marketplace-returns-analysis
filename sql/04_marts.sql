@@ -33,34 +33,29 @@ AND   channel_clean != 'Unknown'
 -- 3. MART_MAIN - Main metrics by day
 -- =============================================
 SELECT
-    o.order_date_clean                                                AS order_date,
-    u.device_clean + '|' + u.region_clean + '|' + u.channel_clean     AS segment_key,
-    u.device_clean                                                    AS device,
-    u.region_clean                                                    AS region,
-    u.channel_clean                                                   AS channel,
-    o.is_after_release,
-    CASE WHEN o.is_after_release = 1 THEN 'After_release'
-         ELSE 'Before_release' END                                    AS period,
-    COUNT(o.order_id)                                                 AS total_orders,
-    SUM(CASE WHEN o.status_clean = 'refunded' 
-        THEN 1 ELSE 0 END)                                            AS refunds,
-    CAST(SUM(CASE WHEN o.status_clean = 'refunded' 
+    order_date_clean                                                        AS order_date,
+    device_clean + '|' + region_clean + '|' + channel_clean                AS segment_key,
+    device_clean                                                            AS device,
+    region_clean                                                            AS region,
+    channel_clean                                                           AS channel,
+    is_after_release,
+    CASE WHEN is_after_release = 1 THEN 'After_release'
+         ELSE 'Before_release' END                                          AS period,
+    COUNT(order_id)                                                         AS total_orders,
+    SUM(CASE WHEN status_clean = 'refunded' THEN 1 ELSE 0 END)             AS refunds,
+    CAST(SUM(CASE WHEN status_clean = 'refunded' 
         THEN 1 ELSE 0 END) AS FLOAT) * 100
-    / NULLIF(COUNT(o.order_id), 0)                                    AS RR
+    / NULLIF(COUNT(order_id), 0)                                            AS RR
 INTO mart_main
-FROM p1_fact_orders_clean o
-JOIN p1_dim_user_clean u ON o.user_id = u.user_id
-WHERE o.status_clean    NOT IN ('unknown', 'cancelled')
-AND   o.order_date_clean IS NOT NULL
-AND   u.device_clean    != 'Unknown'
-AND   u.region_clean    != 'Unknown'
-AND   u.channel_clean   != 'Unknown'
+FROM p1_fact_orders_clean
+WHERE status_clean NOT IN ('unknown', 'cancelled')
+AND   order_date_clean IS NOT NULL
 GROUP BY
-    o.order_date_clean,
-    u.device_clean,
-    u.region_clean,
-    u.channel_clean,
-    o.is_after_release
+    order_date_clean,
+    device_clean,
+    region_clean,
+    channel_clean,
+    is_after_release
 -- Result: 2,904 rows
 
 -- =============================================

@@ -319,3 +319,27 @@ SELECT
              THEN 1 ELSE 0 END) AS immature_users
 FROM p1_retention_d7;
 -- Result: 3,951 of
+
+-- =============================================
+-- 6. CROSS-TABLE LOGICAL CHECKS (run after cleaning)
+-- =============================================
+
+-- 6.1 Orders placed before user registration
+SELECT 
+    COUNT(*) AS orders,
+    SUM(CASE WHEN o.order_date_clean < u.reg_date_clean THEN 1 ELSE 0 END) AS before_reg
+FROM p1_fact_orders_clean o
+JOIN p1_dim_user_clean u ON o.user_id = u.user_id
+WHERE u.reg_date_clean IS NOT NULL;
+-- Result: 189,721 of 382,791 (49.6%) — generator flaw
+-- Decision: cohort analysis (Q6) uses only orders with order_date >= reg_date
+
+-- 6.2 Events before user registration
+SELECT 
+    COUNT(*) AS events,
+    SUM(CASE WHEN e.event_date < u.reg_date_clean THEN 1 ELSE 0 END) AS before_reg
+FROM p1_fact_events_clean e
+JOIN p1_dim_user_clean u ON e.user_id = u.user_id
+WHERE u.reg_date_clean IS NOT NULL;
+-- Result: 583,987 before registration (~49%) — same generator flaw
+-- Decision: funnel compares periods by event_date, not by user cohort → not affected

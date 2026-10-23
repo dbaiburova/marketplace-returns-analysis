@@ -123,26 +123,25 @@ ORDER BY after_release;
 -- =============================================
 -- 5. SHARE OF RETURNS WITHIN 24 HOURS
 -- =============================================
-
-WITH periods_cte AS (
-    SELECT *,
-        CASE 
-            WHEN order_date_clean < '2025-06-15' THEN 'Before_release'
-            ELSE 'After_release'
-        END AS period
-    FROM p1_fact_refunds_clean
-)
-SELECT 
-    period,
-    COUNT(order_id) AS total_refunds,
-    SUM(CASE WHEN hours_to_refund <= 24 THEN 1 ELSE 0 END) AS refunds_24h,
-    CAST(SUM(CASE WHEN hours_to_refund <= 24 
-        THEN 1 ELSE 0 END) AS FLOAT) * 100
-    / COUNT(order_id) AS pct_24h
-FROM periods_cte
-GROUP BY period
--- Result: 60% stable before and after
 -- =============================================
+-- 5. SHARE OF RETURNS WITHIN 24 HOURS
+-- =============================================
+
+SELECT 
+    CASE WHEN order_date_clean < '2025-06-15' THEN 'Before_release'
+         ELSE 'After_release' END                              AS period,
+    COUNT(order_id)                                            AS total_refunds,
+    SUM(CASE WHEN hours_to_refund <= 24 THEN 1 ELSE 0 END)     AS refunds_24h,
+    CAST(SUM(CASE WHEN hours_to_refund <= 24 THEN 1 ELSE 0 END) AS FLOAT) * 100
+        / NULLIF(COUNT(order_id), 0)                           AS pct_24h
+FROM p1_fact_refunds_clean
+GROUP BY CASE WHEN order_date_clean < '2025-06-15' THEN 'Before_release'
+              ELSE 'After_release' END
+ORDER BY period DESC;
+-- Result: Before 60.4% --- After 60.3% (stable)
+-- =============================================
+
+
 -- 6. COHORT ANALYSIS BY REGISTRATION DATE
 -- Question: do users registered after the release refund more than earlier cohorts?
 -- Compare RR on orders AFTER release only (same time period for all cohorts)

@@ -25,10 +25,6 @@ ORDER BY is_after_release;
 -- 2. SEGMENT ANALYSIS WITH DIFF
 -- =============================================
 
--- =============================================
--- 2. SEGMENT ANALYSIS WITH DIFF
--- =============================================
-
 WITH clean_orders AS (
     SELECT *
     FROM p1_fact_orders_clean
